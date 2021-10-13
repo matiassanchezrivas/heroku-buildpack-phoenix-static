@@ -23,9 +23,12 @@ load_previous_npm_node_versions() {
 download_node() {
   local platform=linux-x64
 
+   echo "Node version $node_version"
+   echo $(curl --get --retry 5 -vvv --retry-max-time 30 --data-urlencode -vvv "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt");
+
   if [ ! -f ${cached_node} ]; then
     echo "Resolving node version $node_version..."
-    if ! read number url < <(curl --silent --get --retry 5 --retry-max-time 15 --data-urlencode "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt"); then
+    if ! read number url < <(curl --silent --get --retry 5 --retry-max-time 30 --data-urlencode "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt"); then
       fail_bin_install node $node_version;
     fi
 
@@ -37,6 +40,29 @@ download_node() {
   else
     info "Using cached node ${node_version}..."
   fi
+}
+
+fail_bin_install() {
+  local bin="$1"
+  local version="$2"
+
+  # re-curl the result, saving off the reason for the failure this time
+  local error=$(curl --get --retry 5 --retry-max-time 15 --data-urlencode "range=$version" "https://nodebin.herokai.com/v1/$bin/$platform/latest.txt")
+    echo $error
+  if [[ $error = "No result" ]]; then
+    case $bin in
+      node)
+        echo "Could not find Node version corresponding to version requirement: $version";;
+      iojs)
+        echo "Could not find Iojs version corresponding to version requirement: $version";;
+      yarn)
+        echo "Could not find Yarn version corresponding to version requirement: $version";;
+    esac
+  else
+    echo "Error: Invalid semantic version \"$version\""
+  fi
+
+  false
 }
 
 cleanup_old_node() {
