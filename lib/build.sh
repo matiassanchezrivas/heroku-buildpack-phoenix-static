@@ -24,11 +24,11 @@ download_node() {
   local platform=linux-x64
 
    echo "Node version $node_version"
-   echo $(curl --get --retry 5 -vvv --retry-max-time 30 --data-urlencode -vvv "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt");
+   echo $(curl --get --retry 5 -vvv --retry-max-time 30 --insecure --data-urlencode -vvv "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt");
 
   if [ ! -f ${cached_node} ]; then
     echo "Resolving node version $node_version..."
-    if ! read number url < <(curl --silent --get --retry 5 --retry-max-time 30 --data-urlencode "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt"); then
+    if ! read number url < <(curl --silent --insecure --get --retry 5 --retry-max-time 30 --data-urlencode "range=$node_version" "https://nodebin.herokai.com/v1/node/$platform/latest.txt"); then
       fail_bin_install node $node_version;
     fi
 
